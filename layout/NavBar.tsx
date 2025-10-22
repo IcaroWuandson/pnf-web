@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  LayoutDashboard,
-  Menu,
-  Settings,
-  LogOut,
-  Tags,
-  Home,
-} from "lucide-react";
+import { LayoutDashboard, Menu, LogOut, Tags, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

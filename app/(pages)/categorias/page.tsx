@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, BookOpen, Building2, User } from "lucide-react";
+import { Building2, User } from "lucide-react";
 
 type Category = {
   nome: string;
