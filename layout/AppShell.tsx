@@ -1,15 +1,15 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+// import { useAuth } from "@/contexts/AuthContext";
+// import { supabase } from "@/lib/supabase";
 
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Spinner } from "@/components/ui/spinner";
+// import { Card, CardContent, CardTitle } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
+// import Link from "next/link";
+// import { Spinner } from "@/components/ui/spinner";
 import AppSidebar from "./AppSidebar";
 import Navbar from "./NavBar";
 
@@ -20,8 +20,8 @@ export const invalidateStatusCache = (userId: string) => {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const [isActive, setIsActive] = useState<boolean | null>(null);
+  // const { user } = useAuth();
+  // const [isActive, setIsActive] = useState<boolean | null>(null);
 
   // useEffect(() => {
   //   if (!user?.id) return;
@@ -91,10 +91,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       {!isMobile && <AppSidebar />}
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar />
-        <main className={`flex-1 p-6 `}>
-          {children}
-        </main>
-{/* 
+        <main className={`flex-1 p-6 `}>{children}</main>
+        {/* 
         {!isActive && (
           <div className="fixed inset-0  flex items-center justify-center bg-transparent pointer-events-auto">
             <Card className=" relative top-52 max-w-sm w-full p-6">
