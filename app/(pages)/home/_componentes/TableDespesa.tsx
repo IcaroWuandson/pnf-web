@@ -35,6 +35,7 @@ export default function TableDespesa() {
 
   const itemsPerPage = 10;
 
+  // 🔹 Busca transações paginadas
   const fetchTransactions = async () => {
     if (!user) return;
     setLoading(true);
@@ -42,7 +43,6 @@ export default function TableDespesa() {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage - 1;
 
-    // 🔹 Busca paginada
     const { data, error, count } = await supabase
       .from("transacoes")
       .select("*", { count: "exact" })
@@ -61,10 +61,48 @@ export default function TableDespesa() {
     setLoading(false);
   };
 
+  // 🔸 Atualiza ao logar ou mudar de página
   useEffect(() => {
     fetchTransactions();
   }, [user, page]);
 
+  // 🔥 Realtime - escuta alterações em tempo real
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("transacoes-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "transacoes", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          console.log("📡 Realtime evento:", payload.eventType);
+
+          if (payload.eventType === "INSERT") {
+            setTransactions((prev) => [payload.new as Transaction, ...prev]);
+            setTotalCount((prev) => prev + 1);
+          }
+
+          if (payload.eventType === "DELETE") {
+            setTransactions((prev) => prev.filter((t) => t.id !== payload.old.id));
+            setTotalCount((prev) => Math.max(prev - 1, 0));
+          }
+
+          if (payload.eventType === "UPDATE") {
+            setTransactions((prev) =>
+              prev.map((t) => (t.id === payload.new.id ? (payload.new as Transaction) : t))
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // 🔹 Excluir transação manualmente
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("transacoes").delete().eq("id", id);
 
@@ -74,7 +112,6 @@ export default function TableDespesa() {
       return;
     }
 
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
     toast.success("Transação removida com sucesso!");
   };
 
@@ -95,6 +132,7 @@ export default function TableDespesa() {
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {loading ? (
             <TableRow>
@@ -120,9 +158,7 @@ export default function TableDespesa() {
                 </TableCell>
                 <TableCell>{t.categoria}</TableCell>
                 <TableCell
-                  className={
-                    t.tipo === "entrada" ? "text-green-600" : "text-red-600"
-                  }
+                  className={t.tipo === "entrada" ? "text-green-600" : "text-red-600"}
                 >
                   {t.tipo === "entrada" ? "Entrada" : "Saída"}
                 </TableCell>
