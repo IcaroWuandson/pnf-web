@@ -11,11 +11,14 @@ import {
   ResponsiveContainer,
   Cell,
   Legend,
+  PieChart,
+  Pie,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import { ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { MonthCarousel } from "@/components/seletor-mes";
 
 type Previsao = {
   dia: string;
@@ -32,15 +35,32 @@ export default function Page() {
   const [pieData, setPieData] = useState<any[]>([]);
   const [forecastData, setForecastData] = useState<any[]>([]);
 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   useEffect(() => {
     if (!user) return;
+
+    const inicioMes = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      1
+    ).toISOString();
+
+    const fimMes = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth() + 1,
+      1
+    ).toISOString();
 
     const fetchData = async () => {
       const { data, error } = await supabase
         .from("transacoes")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: true }); // ✅ ordena do mais antigo para o mais recente
+        .gte("created_at", inicioMes)
+        .lt("created_at", fimMes)
+
+        .order("created_at", { ascending: true });
 
       if (error) {
         console.error("Erro ao buscar transações:", error);
@@ -134,7 +154,7 @@ export default function Page() {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, selectedDate]);
 
   const COLORS = [
     "#0ea5e9",
@@ -157,6 +177,10 @@ export default function Page() {
 
   return (
     <div className="space-y-8">
+      <MonthCarousel
+        onMonthSelect={(date) => setSelectedDate(date)}
+        defaultSelectedMonth={new Date()}
+      />
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -267,23 +291,18 @@ export default function Page() {
         <CardContent className="flex justify-center">
           <div className="w-full h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dataComPercentual}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="categoria" />
-                <Tooltip
-                  formatter={(value: number, name: string) => [
-                    `R$ ${value.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}`,
-                    name,
-                  ]}
-                />
-                <Legend />
-                <Bar
+              <PieChart>
+                <Pie
+                  data={dataComPercentual}
                   dataKey="valor"
-                  fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
-                  name="Valor gasto"
+                  nameKey="categoria"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  labelLine={false}
+                  label={({ payload }) =>
+                    `${payload.categoria}: ${payload.percentual}%`
+                  }
                 >
                   {dataComPercentual.map((_, index) => (
                     <Cell
@@ -293,8 +312,17 @@ export default function Page() {
                       strokeWidth={1}
                     />
                   ))}
-                </Bar>
-              </BarChart>
+                </Pie>
+                <Tooltip
+                  formatter={(value: number, name: string) => [
+                    `R$ ${value.toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                    })}`,
+                    name,
+                  ]}
+                />
+                <Legend />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </CardContent>

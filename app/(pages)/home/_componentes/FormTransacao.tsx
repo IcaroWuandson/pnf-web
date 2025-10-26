@@ -218,9 +218,9 @@ export default function FormTransacao() {
 
       <Button
         type="submit"
-        className="w-full bg-[#24b3a9] font-bold text-black"
+        className="w-full bg-[#24b3a9] font-bold text-white"
       >
-        Adicionar Transação
+        Adicionar movimentação
       </Button>
     </form>
   );

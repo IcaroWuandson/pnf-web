@@ -21,6 +21,7 @@ import { PlusCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import FormTransacao from "./_componentes/FormTransacao";
+import { MonthCarousel } from "@/components/seletor-mes";
 
 type Totais = {
   entradas: number;
@@ -31,6 +32,8 @@ type Totais = {
 
 export default function Page() {
   const { user } = useAuth();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   const [pessoal, setPessoal] = useState<Totais>({
     entradas: 0,
     fixas: 0,
@@ -45,27 +48,29 @@ export default function Page() {
   });
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const fetchData = async () => {
-      // calcula o primeiro e último dia do mês atual
       const inicioMes = new Date(
-        new Date().getFullYear(),
-        new Date().getMonth(),
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
         1
       ).toISOString();
+
       const fimMes = new Date(
-        new Date().getFullYear(),
-        new Date().getMonth() + 1,
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1,
         1
       ).toISOString();
+
+      console.log("🔍 Buscando transações entre:", inicioMes, "e", fimMes);
 
       const { data, error } = await supabase
         .from("transacoes")
         .select("*")
         .eq("user_id", user.id)
-        .gte("created_at", inicioMes) // >= primeiro dia do mês
-        .lt("created_at", fimMes); // < primeiro dia do próximo mês
+        .gte("created_at", inicioMes)
+        .lt("created_at", fimMes);
 
       if (error) {
         console.error("Erro ao buscar transações:", error);
@@ -97,10 +102,17 @@ export default function Page() {
     };
 
     fetchData();
-  }, [user]);
+  }, [user?.id, selectedDate]); 
 
   return (
     <div className="space-y-6">
+      {/* 🔸 Carrossel de meses */}
+      <MonthCarousel
+        onMonthSelect={(date) => setSelectedDate(date)}
+        defaultSelectedMonth={new Date()}
+      />
+
+      {/* 🔸 Cards resumo */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
         <Card className="col-span-2">
           <CardHeader>
@@ -208,7 +220,7 @@ export default function Page() {
           <CardContent>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="w-full bg-[#24b3a9] font-bold text-black">
+                <Button className="w-full bg-[#24b3a9] font-bold text-white">
                   <PlusCircle className="mr-2" />
                   Nova movimentação
                 </Button>
@@ -224,6 +236,7 @@ export default function Page() {
         </Card>
       </div>
 
+      {/* 🔸 Tabela de despesas */}
       <TableDespesa />
     </div>
   );

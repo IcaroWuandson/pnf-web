@@ -16,14 +16,11 @@ export default function Page() {
           <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-3xl font-bold leading-tight">
-                Texto{" "}
+                Coloque suas finanças pessoais e profissionais em ordem com o{" "}
                 <span className="bg-gradient-hero bg-clip-text text-[#24b3a9]">
-                  em Destaque
+                  Painel Financeiro Inteligente
                 </span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Lore Impsum.
-              </p>
             </div>
 
             <div className="pt-4">
